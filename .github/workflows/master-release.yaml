@@ -33,16 +33,6 @@ jobs:
       - name: Run Tests
         run: npm test
 
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Install Dependencies
-        run: npm install
-      - name: Run Tests
-        run: npm run test
-
   release:
     needs: [check]
   release:
