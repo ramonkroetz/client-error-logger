@@ -1,6 +1,6 @@
 {
-  "name": "client-error-logger",
-  "version": "0.0.0",
+  "name": "@ramonkroetz/client-error-logger",
+  "version": "1.0.0",
   "description": "Logger for browser",
   "main": "./lib/index.cjs",
   "module": "./lib/index.js",
@@ -9,6 +9,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ramonkroetz/client-error-logger.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
     "build": "npx tsup",
