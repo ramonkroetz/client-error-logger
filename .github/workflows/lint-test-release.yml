@@ -4,9 +4,17 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Type of release to perform'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
 
 jobs:
   check:
@@ -33,7 +41,7 @@ jobs:
   
   major:
     needs: check
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.release_type == 'major'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
