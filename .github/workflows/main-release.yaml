@@ -163,7 +163,7 @@ jobs:
         git push publisher HEAD:release/v${{env.RELEASE_VERSION}}
 
     - name: Publish
-      run: npm run publish
+      run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
