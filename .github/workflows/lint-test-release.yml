@@ -8,13 +8,10 @@ on:
     inputs:
       release_type:
         description: 'Type of release to perform'
-        required: true
-        default: 'patch'
+        required: false
         type: choice
         options:
           - major
-          - minor
-          - patch
 
 jobs:
   check:
