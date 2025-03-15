@@ -114,7 +114,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ steps.newtag.outputs.tag }}
-        release_name: "[${{ steps.newtag.outputs.type }}] Release ${{ steps.newtag.outputs.tag }}"
+        release_name: "Release ${{ steps.newtag.outputs.tag }}"
         draft: false
         prerelease: false
 
