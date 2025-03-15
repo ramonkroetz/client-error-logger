@@ -1,6 +1,11 @@
 name: Lint, Test, and Release
 
 on:
+  push:
+    branches:
+      - main
+
+on:
   workflow_dispatch:
     inputs:
       release_type:
