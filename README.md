@@ -5,7 +5,7 @@
 testing workflows
 
 ```ts
-import { configure, logError } from "client-error-logger";
+import { configure, logError } from "client-error-logger"
 
 configure({
   /* not call endpoint, just show in console */
@@ -14,8 +14,8 @@ configure({
   disable: false, // default: false
   /* endpoint to send logs */
   logEndpoint: "/log", // default: ''
-});
+})
 
-const anyObjectError = {};
-logError("Error message", { anyObjectError });
+const anyObjectError = {}
+logError("Error message", { anyObjectError })
 ```
