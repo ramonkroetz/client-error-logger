@@ -2,6 +2,8 @@
 
 ## How to use
 
+testing workflows
+
 ```ts
 import { configure, logError } from "client-error-logger";
 
