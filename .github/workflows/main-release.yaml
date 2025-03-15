@@ -17,13 +17,6 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    - name: Setup Node
-      uses: actions/setup-node@v4
-      with:
-        node-version: 20.x
-        registry-url: 'https://npm.pkg.github.com'
-        scope: '@ramonkroetz'
-
     - name: Set Node.js Version with NVM
       run: |
         nvm install
@@ -33,11 +26,11 @@ jobs:
     - name: Install Dependencies
       run: npm ci
 
-    - name: Run Linter
+    - name: Linter
       run: |
         npm run lint
     
-    - name: Run Tests
+    - name: Tests
       run: npm test
 
     - name: Build
@@ -151,9 +144,4 @@ jobs:
 
         git commit package.json -m "Updated package.json version to version released ${{env.RELEASE_VERSION}}"
         git push publisher HEAD:release/v${{env.RELEASE_VERSION}}
-
-    # - name: Publish Github Package
-    #   run: npm publish --access public
-    #   env:
-    #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
