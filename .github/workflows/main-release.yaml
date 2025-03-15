@@ -164,8 +164,8 @@ jobs:
 
           echo "Release version: ${{env.RELEASE_VERSION}}"
 
-          npm run config set version-git-tag false
-          npm run version --new-version ${{env.RELEASE_VERSION}}
+          npm config set version-git-tag false
+          npm version --new-version ${{env.RELEASE_VERSION}}
 
           git commit package.json -m "Updated package.json version to version released ${{env.RELEASE_VERSION}}"
           git push publisher HEAD:release/v${{env.RELEASE_VERSION}}
