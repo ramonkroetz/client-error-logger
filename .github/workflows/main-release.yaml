@@ -123,6 +123,7 @@ jobs:
         prerelease: false
   
   publish:
+    needs: [release]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
