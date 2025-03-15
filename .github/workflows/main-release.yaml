@@ -36,17 +36,11 @@ jobs:
   release:
     needs: [check]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
 
     - name: Get latest release details
-      id: get-release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         RECENT_RELEASES_ARRAY=$(curl -qsSL \
           -H "Accept: application/vnd.github+json" \
@@ -67,7 +61,7 @@ jobs:
         else
           echo "Proceeding with tag/release creation."
           echo "SKIP=false" >> $GITHUB_ENV
-        fi    
+        fi
 
     - name: Create new tag
       id: newtag
@@ -75,17 +69,19 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        set -e
+        # Only try to fetch labels if this is a pull_request event
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          LABELS=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} --jq '.labels.[].name')
+        else
+          LABELS=""
+          echo "Not a pull request event, skipping label check."
+        fi
 
-        LABELS=""
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            LABELS=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" --jq '.labels.[].name' || echo "")
-          fi
-          
-        echo "Found labels: $LABELS"
+        echo "Labels found: $LABELS"
+        echo ${{ env.TAG_NAME }}
 
-        # Handle first release
-        if [ -z "${{ env.TAG_NAME }}" ] || [ "${{ env.TAG_NAME }}" = "null" ]; then
+        # If there's no latest release (meaning it's the first release)
+        if [[ -z "${{ env.TAG_NAME }}" ]] || [[ "${{ env.TAG_NAME }}" == "null" ]]; then
           NEW_TAG="v1.0.0"
           TYPE="MINOR"
           echo "type=$TYPE" >> $GITHUB_OUTPUT
@@ -93,57 +89,52 @@ jobs:
           exit 0
         fi
 
-        # Skip if latest release is draft or prerelease
-        if [ "${{ env.IS_DRAFT }}" = "true" ] || [ "${{ env.IS_PRERELEASE }}" = "true" ]; then
-          echo "Latest release is draft or prerelease. Skipping."
+        # Check if the latest release was a draft or pre-release
+        if [[ "${{ env.IS_DRAFT }}" == "true" || "${{ env.IS_PRE_RELEASE }}" == "true" ]]; then
+          echo "Latest release was a draft or pre-release. Skipping."
           exit 0
         fi
-        
-        # Parse current version
+
         CURRENT_TAG=${{ env.TAG_NAME }}
-        VERSION=$(echo "$CURRENT_TAG" | sed 's/v//')
-        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
-        
-        # Determine version bump type
+        IFS='.' read -ra VERSION <<< "$(echo $CURRENT_TAG | tr -d 'v')"
+
+        MAJOR=${VERSION[0]}
+        MINOR=${VERSION[1]}
+        PATCH=${VERSION[2]}
+
         TYPE="PATCH"
-        for LABEL in $LABELS; do
-          case $LABEL in
-            "major")
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-              TYPE="MAJOR"
-              break
-              ;;
-            "minor")
-              MINOR=$((MINOR + 1))
-              PATCH=0
-              TYPE="MINOR"
-              break
-              ;;
-          esac
+
+        for LABEL in "${LABELS[@]}"; do 
+          if [[ "$LABEL" == "major" ]]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+            TYPE="MAJOR"
+            break
+          elif [[ "$LABEL" == "minor" ]]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+            TYPE="MINOR"
+            break
+          fi
         done
-        
-        if [ "$TYPE" = "PATCH" ]; then
-          PATCH=$((PATCH + 1))
+
+        if [[ "$TYPE" == "PATCH" ]]; then
+            PATCH=$((PATCH + 1))
         fi
-        
+
         NEW_TAG="v$MAJOR.$MINOR.$PATCH"
-        
+
         echo "type=$TYPE" >> $GITHUB_OUTPUT
         echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
 
     - name: Create GitHub Release
       if: steps.newtag.outputs.tag
-      uses: actions/github-script@v7
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          await github.rest.repos.createRelease({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            tag_name: "${{ steps.newtag.outputs.tag }}",
-            name: "[${{ steps.newtag.outputs.type }}] Release ${{ steps.newtag.outputs.tag }}",
-            draft: true,
-            prerelease: true
-          });
+        tag_name: ${{ steps.newtag.outputs.tag }}
+        release_name: "[${{ steps.newtag.outputs.type }}] Release ${{ steps.newtag.outputs.tag }}"
+        draft: true
+        prerelease: true
