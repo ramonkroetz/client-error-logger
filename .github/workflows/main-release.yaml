@@ -1,0 +1,147 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Node.js Version with NVM
+        run: |
+          nvm install
+          nvm use
+        shell: bash -l {0}
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Linter
+        run: |
+          npm run lint
+      
+      - name: Run Tests
+        run: npm test
+
+  release:
+    needs: [check]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true)
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get latest release details
+      id: get-release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        set -e
+        RECENT_RELEASE=$(gh api -H "Accept: application/vnd.github+json" \
+          "/repos/${{ github.repository }}/releases/latest" || echo '{}')
+        
+        IS_DRAFT=$(echo "$RECENT_RELEASE" | jq -r '.draft // false')
+        IS_PRERELEASE=$(echo "$RECENT_RELEASE" | jq -r '.prerelease // false')
+        TAG_NAME=$(echo "$RECENT_RELEASE" | jq -r '.tag_name // ""')
+        
+        echo "IS_DRAFT=$IS_DRAFT" >> $GITHUB_ENV
+        echo "IS_PRERELEASE=$IS_PRERELEASE" >> $GITHUB_ENV
+        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+        
+        if [ "$IS_DRAFT" = "true" ]; then
+          echo "Latest release is a draft. Skipping."
+          echo "SKIP=true" >> $GITHUB_ENV
+        else
+          echo "SKIP=false" >> $GITHUB_ENV
+        fi
+
+    - name: Create new tag
+      id: newtag
+      if: env.SKIP != 'true'
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -e
+
+        LABELS=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            LABELS=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" --jq '.labels.[].name' || echo "")
+          fi
+          
+        echo "Found labels: $LABELS"
+
+        # Handle first release
+        if [ -z "${{ env.TAG_NAME }}" ] || [ "${{ env.TAG_NAME }}" = "null" ]; then
+          NEW_TAG="v1.0.0"
+          TYPE="MINOR"
+          echo "type=$TYPE" >> $GITHUB_OUTPUT
+          echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        # Skip if latest release is draft or prerelease
+        if [ "${{ env.IS_DRAFT }}" = "true" ] || [ "${{ env.IS_PRERELEASE }}" = "true" ]; then
+          echo "Latest release is draft or prerelease. Skipping."
+          exit 0
+        fi
+        
+        # Parse current version
+        CURRENT_TAG=${{ env.TAG_NAME }}
+        VERSION=$(echo "$CURRENT_TAG" | sed 's/v//')
+        IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+        
+        # Determine version bump type
+        TYPE="PATCH"
+        for LABEL in $LABELS; do
+          case $LABEL in
+            "major")
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              TYPE="MAJOR"
+              break
+              ;;
+            "minor")
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              TYPE="MINOR"
+              break
+              ;;
+          esac
+        done
+        
+        if [ "$TYPE" = "PATCH" ]; then
+          PATCH=$((PATCH + 1))
+        fi
+        
+        NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+        
+        echo "type=$TYPE" >> $GITHUB_OUTPUT
+        echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+    - name: Create GitHub Release
+      if: steps.newtag.outputs.tag
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          await github.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: "${{ steps.newtag.outputs.tag }}",
+            name: "[${{ steps.newtag.outputs.type }}] Release ${{ steps.newtag.outputs.tag }}",
+            draft: true,
+            prerelease: true
+          });
