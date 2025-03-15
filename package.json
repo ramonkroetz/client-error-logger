@@ -1,0 +1,35 @@
+{
+  "name": "client-error-logger",
+  "description": "Logger for browser",
+  "main": "./lib/index.cjs",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ramonkroetz/client-error-logger.git"
+  },
+  "scripts": {
+    "build": "npx tsup",
+    "format": "biome format .",
+    "lint": "biome lint .",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@types/jest": "29.5.14",
+    "axios-mock-adapter": "2.1.0",
+    "jest-environment-jsdom": "29.7.0",
+    "ts-jest": "29.2.6",
+    "tsup": "8.4.0",
+    "typescript": "5.8.2"
+  },
+  "dependencies": {
+    "@fingerprintjs/fingerprintjs": "4.6.1",
+    "axios": "1.8.2",
+    "bowser": "2.11.0"
+  }
+}
