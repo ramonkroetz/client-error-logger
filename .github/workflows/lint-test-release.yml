@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  lint:
+  check:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -30,6 +30,25 @@ jobs:
       
       - name: Run Tests
         run: npm test
+  
+  major:
+    needs: check
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Node.js Version with NVM
+        run: |
+          nvm install
+          nvm use
+        shell: bash -l {0}
+
+      - name: Install Dependencies
+        run: npm install
+
+    
 
   # release:
   #   if: github.event_name == 'workflow_dispatch'
