@@ -50,22 +50,11 @@ jobs:
 
         RECENT_RELEASE=$(echo "$RECENT_RELEASES_ARRAY" | jq '.[0]')
 
-        IS_DRAFT=$(echo "$RECENT_RELEASE" | jq -r '.prerelease')
         echo "IS_PRE_RELEASE=$(echo "$RECENT_RELEASE" | jq -r '.prerelease')" >> $GITHUB_ENV
-        echo "IS_DRAFT=$IS_DRAFT" >> $GITHUB_ENV
         echo "TAG_NAME=$(echo "$RECENT_RELEASE" | jq -r '.tag_name')" >> $GITHUB_ENV
-
-        if [[ "$IS_DRAFT" == "true" ]]; then
-          echo "The most recent release is a draft. Skipping tag/release creation."
-          echo "SKIP=true" >> $GITHUB_ENV
-        else
-          echo "Proceeding with tag/release creation."
-          echo "SKIP=false" >> $GITHUB_ENV
-        fi
 
     - name: Create new tag
       id: newtag
-      if: env.SKIP != 'true'
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
@@ -86,12 +75,6 @@ jobs:
           TYPE="MINOR"
           echo "type=$TYPE" >> $GITHUB_OUTPUT
           echo "tag=$NEW_TAG" >> $GITHUB_OUTPUT
-          exit 0
-        fi
-
-        # Check if the latest release was a draft or pre-release
-        if [[ "${{ env.IS_DRAFT }}" == "true" || "${{ env.IS_PRE_RELEASE }}" == "true" ]]; then
-          echo "Latest release was a draft or pre-release. Skipping."
           exit 0
         fi
 
