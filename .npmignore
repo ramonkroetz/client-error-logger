@@ -1,7 +1,8 @@
 .vscode
 src
 .gitignore
-.gitlab-ci.yml
+node_modules
+.github
 .nvmrc
 biome.json
 jest.config.mjs

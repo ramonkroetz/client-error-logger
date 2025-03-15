@@ -152,8 +152,8 @@ jobs:
         git commit package.json -m "Updated package.json version to version released ${{env.RELEASE_VERSION}}"
         git push publisher HEAD:release/v${{env.RELEASE_VERSION}}
 
-    - name: Publish
-      run: npm publish --access public
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # - name: Publish Github Package
+    #   run: npm publish --access public
+    #   env:
+    #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -1,8 +1,12 @@
 # client-error-logger
 
-## How to use
+## Install
 
-testing workflows 2
+```bash
+  npm install github:ramonkroetz/client-error-logger#v1.0.1
+```
+
+## How to use
 
 ```ts
 import { configure, logError } from "client-error-logger"
