@@ -35,7 +35,6 @@ jobs:
 
   release:
     needs: [check]
-  release:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
