@@ -48,24 +48,26 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        set -e
-        RECENT_RELEASE=$(gh api -H "Accept: application/vnd.github+json" \
-          "/repos/${{ github.repository }}/releases/latest" || echo '{}')
-        
-        IS_DRAFT=$(echo "$RECENT_RELEASE" | jq -r '.draft // false')
-        IS_PRERELEASE=$(echo "$RECENT_RELEASE" | jq -r '.prerelease // false')
-        TAG_NAME=$(echo "$RECENT_RELEASE" | jq -r '.tag_name // ""')
-        
+        RECENT_RELEASES_ARRAY=$(curl -qsSL \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "${{ github.api_url }}/repos/${{ github.repository }}/releases")
+
+        RECENT_RELEASE=$(echo "$RECENT_RELEASES_ARRAY" | jq '.[0]')
+
+        IS_DRAFT=$(echo "$RECENT_RELEASE" | jq -r '.prerelease')
+        echo "IS_PRE_RELEASE=$(echo "$RECENT_RELEASE" | jq -r '.prerelease')" >> $GITHUB_ENV
         echo "IS_DRAFT=$IS_DRAFT" >> $GITHUB_ENV
-        echo "IS_PRERELEASE=$IS_PRERELEASE" >> $GITHUB_ENV
-        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
-        
-        if [ "$IS_DRAFT" = "true" ]; then
-          echo "Latest release is a draft. Skipping."
+        echo "TAG_NAME=$(echo "$RECENT_RELEASE" | jq -r '.tag_name')" >> $GITHUB_ENV
+
+        if [[ "$IS_DRAFT" == "true" ]]; then
+          echo "The most recent release is a draft. Skipping tag/release creation."
           echo "SKIP=true" >> $GITHUB_ENV
         else
+          echo "Proceeding with tag/release creation."
           echo "SKIP=false" >> $GITHUB_ENV
-        fi
+        fi    
 
     - name: Create new tag
       id: newtag
