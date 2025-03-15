@@ -1,5 +1,6 @@
 {
   "name": "client-error-logger",
+  "version": "1.0.0",
   "description": "Logger for browser",
   "main": "./lib/index.cjs",
   "module": "./lib/index.js",
