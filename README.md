@@ -2,7 +2,7 @@
 
 ## How to use
 
-testing workflows
+testing workflows 2
 
 ```ts
 import { configure, logError } from "client-error-logger"
