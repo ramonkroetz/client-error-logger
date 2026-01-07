@@ -1,7 +1,7 @@
 import Bowser from 'bowser'
+import { getBrowserId } from 'utils'
 
 import type { LoggerConfig } from './types'
-import Fingerprint from '@fingerprintjs/fingerprintjs'
 
 export type LogInfo = {
   errorType: string
@@ -49,12 +49,6 @@ export function setConfig(newConfig: LoggerConfig) {
 
 export function resetConfig() {
   return setConfig(LOGGER_DEFAULT_CONFIG)
-}
-
-async function getBrowserId() {
-  const fpPromise = await Fingerprint.load()
-  const result = await fpPromise.get()
-  return result.visitorId
 }
 
 export async function collectInfo(errorType: string, extraInfo?: object): Promise<LogInfo> {

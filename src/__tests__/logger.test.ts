@@ -1,10 +1,11 @@
+import '../__mocks__/matchMedia.mock'
+import '../__mocks__/utils.mock'
+
 import axios from 'axios'
 import AxiosMockAdapter from 'axios-mock-adapter'
 
-import '../__mocks__/matchMedia.mock'
-import '../__mocks__/fingerprintjs.mock'
-import { logError, configure } from '..'
-import { resetConfig, type LogInfo } from '../helpers'
+import { configure, logError } from '..'
+import { type LogInfo, resetConfig } from '../helpers'
 
 describe('logger', () => {
   const errorType = 'CUSTOM_ERROR_TYPE'
