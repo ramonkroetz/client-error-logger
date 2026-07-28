@@ -39,5 +39,6 @@
   "allowScripts": {
     "esbuild@0.27.7": true,
     "opencode-ai@1.18.8": true
-  }
+  },
+  "version": "2.0.0"
 }
