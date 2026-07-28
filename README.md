@@ -5,7 +5,7 @@
 - After creating a new tag you can install the new version by running the following command:
 
 ```bash
-    npm i git+https://git.cwi.com.br/stacks/typescript/packages/logger-browser#v1.3.3
+    npm install github:ramonkroetz/client-error-logger#v2.0.0
 ```
 
 ## How to use
