@@ -1,4 +1,4 @@
-# logger-browser
+# client-logger-browser
 
 ## Install
 
@@ -11,7 +11,7 @@
 ## How to use
 
 ```ts
-import { configure, getBrowserId, logError } from "logger-browser";
+import { configure, getBrowserId, logError } from "client-logger-browser";
 
 configure({
   /* not call endpoint, just show in console */

@@ -1,5 +1,5 @@
 {
-  "name": "logger-browser",
+  "name": "client-logger-browser",
   "description": "Logger for browser",
   "main": "./lib/index.cjs",
   "module": "./lib/index.js",
