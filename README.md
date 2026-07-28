@@ -1,15 +1,17 @@
-# client-error-logger
+# logger-browser
 
 ## Install
 
+- After creating a new tag you can install the new version by running the following command:
+
 ```bash
-  npm install github:ramonkroetz/client-error-logger#v1.0.1
+    npm i git+https://git.cwi.com.br/stacks/typescript/packages/logger-browser#v1.3.3
 ```
 
 ## How to use
 
 ```ts
-import { configure, logError } from "client-error-logger"
+import { configure, getBrowserId, logError } from "logger-browser";
 
 configure({
   /* not call endpoint, just show in console */
@@ -18,8 +20,12 @@ configure({
   disable: false, // default: false
   /* endpoint to send logs */
   logEndpoint: "/log", // default: ''
-})
+});
 
-const anyObjectError = {}
-logError("Error message", { anyObjectError })
+const anyObjectError = {};
+logError("Error message", { anyObjectError });
+
+// Returns a stable, anonymous identifier for the current browser.
+const browserId = await getBrowserId();
+console.log("Browser ID:", browserId);
 ```

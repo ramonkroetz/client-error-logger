@@ -1,7 +1,6 @@
-import axios from 'axios'
+import { collectInfo, getBrowserId, getConfig, type LoggerConfig, setConfig } from './helpers'
 
-import { collectInfo, getConfig, setConfig } from './helpers'
-import type { LoggerConfig } from './types'
+export { getBrowserId }
 
 /** Configure logger instance */
 export function configure(newConfig: Partial<LoggerConfig>) {
@@ -21,7 +20,7 @@ export async function logError(errorType: string, extraInfo?: object) {
 
   if (config.debug) {
     console.log(
-      `%c client-error-logger %c ${info.errorType} `,
+      `%c logger-browser %c ${info.errorType} `,
       'background: #db3534; color: white;',
       'background: lightgrey; color: #333;',
       'Endpoint called with parameters:',
@@ -34,7 +33,9 @@ export async function logError(errorType: string, extraInfo?: object) {
     return console.error('Logger endpoint not configured')
   }
 
-  await axios.post(config.logEndpoint, {
-    data: info,
+  await fetch(config.logEndpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: info }),
   })
 }

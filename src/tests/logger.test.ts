@@ -1,8 +1,7 @@
-import '../__mocks__/matchMedia.mock'
-import '../__mocks__/utils.mock'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import axios from 'axios'
-import AxiosMockAdapter from 'axios-mock-adapter'
+import './mocks/matchMedia.mock'
+import './mocks/fingerprintjs.mock'
 
 import { configure, logError } from '..'
 import { type LogInfo, resetConfig } from '../helpers'
@@ -11,13 +10,12 @@ describe('logger', () => {
   const errorType = 'CUSTOM_ERROR_TYPE'
   const logEndpoint = '/path/to/custom/log/endpoint'
 
-  const axiosMock = new AxiosMockAdapter(axios)
-
-  axiosMock.onPost(logEndpoint).reply(200)
+  const fetchMock = vi.fn().mockResolvedValue({ ok: true })
 
   beforeEach(() => {
     resetConfig()
-    axiosMock.resetHistory()
+    fetchMock.mockClear()
+    global.fetch = fetchMock
   })
 
   it('calls the configured "logEndpoint" option when "logError" is called', async () => {
@@ -25,8 +23,8 @@ describe('logger', () => {
 
     await logError(errorType)
 
-    expect(axiosMock.history.post.length).toBe(1)
-    expect(axiosMock.history.post[0].url).toBe(logEndpoint)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(logEndpoint, expect.objectContaining({ method: 'POST' }))
   })
 
   it('don\'t call the log endpoint when "disabled" option is true', async () => {
@@ -34,7 +32,7 @@ describe('logger', () => {
 
     await logError(errorType)
 
-    expect(axiosMock.history.post.length).toBe(0)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('updates the configuration after "configure" method is called', async () => {
@@ -48,9 +46,9 @@ describe('logger', () => {
 
     await logError(errorType)
 
-    expect(axiosMock.history.post.length).toBe(1)
-    expect(axiosMock.history.post[0].url).toBe(logEndpoint)
-    expect(JSON.parse(axiosMock.history.post[0].data)).toEqual({
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(fetchMock).toHaveBeenCalledWith(logEndpoint, expect.objectContaining({ method: 'POST' }))
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
       data: expect.objectContaining<Partial<LogInfo>>({
         extraInfo: {
           buildDateTime,
@@ -67,8 +65,8 @@ describe('logger', () => {
 
     await logError(errorType)
 
-    expect(axiosMock.history.post.length).toBe(1)
-    expect(JSON.parse(axiosMock.history.post[0].data)).toEqual({
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
       data: expect.objectContaining<LogInfo>({
         errorType,
         allLanguages: expect.any(Array),
@@ -109,14 +107,14 @@ describe('logger', () => {
 
     await logError(errorType, extraInfo)
 
-    expect(axiosMock.history.post.length).toBe(1)
-    expect(JSON.parse(axiosMock.history.post[0].data).data.extraInfo).toEqual(extraInfo)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body).data.extraInfo).toEqual(extraInfo)
   })
 
   it('console.log is correctly called when "debug" option is true', async () => {
     configure({ debug: true })
 
-    const consoleLogMock = jest.spyOn(console, 'log').mockImplementation(() => {})
+    const consoleLogMock = vi.spyOn(console, 'log').mockImplementation(() => {})
     const loggedStyle = Array(4).fill(expect.any(String))
     const loggedData = expect.objectContaining<LogInfo>({
       errorType,
@@ -146,6 +144,6 @@ describe('logger', () => {
 
     expect(consoleLogMock).toHaveBeenCalledTimes(1)
     expect(consoleLogMock).toHaveBeenCalledWith(...loggedStyle, loggedData)
-    expect(axiosMock.history.post.length).toBe(0)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

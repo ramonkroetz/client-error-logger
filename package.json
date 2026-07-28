@@ -1,35 +1,43 @@
 {
-  "name": "client-error-logger",
+  "name": "logger-browser",
   "description": "Logger for browser",
   "main": "./lib/index.cjs",
   "module": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "type": "module",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ramonkroetz/client-error-logger.git"
-  },
   "scripts": {
-    "build": "tsup",
-    "format": "biome format .",
-    "lint": "biome check . && biome lint --error-on-warnings .",
-    "test": "jest"
+    "build": "npm run build:dist && npm run build:lib",
+    "build:dist": "vite build --mode app",
+    "build:lib": "vite build --mode lib",
+    "preview": "vite preview --outDir dist --open",
+    "format": "biome check --write .",
+    "lint": "npm run lint:biome && npm run lint:ts",
+    "lint:biome": "biome lint --error-on-warnings . && biome check .",
+    "lint:ts": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest",
+    "opencode": "npm exec opencode -- .",
+    "commit": "npm exec opencode -- run --command commit"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@biomejs/biome": "2.3.11",
-    "@types/jest": "29.5.14",
-    "axios-mock-adapter": "2.1.0",
-    "jest-environment-jsdom": "30.0.5",
-    "ts-jest": "29.4.6",
-    "tsup": "8.5.1",
-    "typescript": "5.8.2"
+    "@testing-library/jest-dom": "6.9.1",
+    "@vitejs/plugin-react": "6.0.4",
+    "happy-dom": "20.11.1",
+    "opencode-ai": "1.18.8",
+    "typescript": "5.8.2",
+    "vite": "8.1.5",
+    "vite-plugin-dts": "5.0.1",
+    "vitest": "4.1.7"
   },
   "dependencies": {
-    "axios": "1.13.2",
-    "bowser": "2.11.0",
-    "utils": "github:ramonkroetz/utils#v1.0.0"
+    "@fingerprintjs/fingerprintjs": "5.0.1",
+    "bowser": "2.11.0"
+  },
+  "allowScripts": {
+    "esbuild@0.27.7": true,
+    "opencode-ai@1.18.8": true
   }
 }

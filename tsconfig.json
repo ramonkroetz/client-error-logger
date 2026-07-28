@@ -8,7 +8,7 @@
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "esModuleInterop": true,
-    "isolatedModules": true
-  },
-  "exclude": ["node_modules", "lib"]
+    "isolatedModules": true,
+    "skipLibCheck": true
+  }
 }

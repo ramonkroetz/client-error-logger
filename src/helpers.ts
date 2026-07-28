@@ -1,7 +1,16 @@
+import Fingerprint from '@fingerprintjs/fingerprintjs'
 import Bowser from 'bowser'
-import { getBrowserId } from 'utils'
 
-import type { LoggerConfig } from './types'
+export type LoggerConfig = {
+  /** Enable debug mode - DEV */
+  debug?: boolean
+  /** Disable logging */
+  disable?: boolean
+  /** Log endpoint URL */
+  logEndpoint?: string
+  /** Static info that is sent in every log */
+  staticInfo?: { [key: string]: string }
+}
 
 export type LogInfo = {
   errorType: string
@@ -37,7 +46,7 @@ const LOGGER_DEFAULT_CONFIG: LoggerConfig = {
   staticInfo: {},
 }
 
-let config = LOGGER_DEFAULT_CONFIG
+let config: LoggerConfig = LOGGER_DEFAULT_CONFIG
 
 export function getConfig() {
   return config
@@ -83,4 +92,11 @@ export async function collectInfo(errorType: string, extraInfo?: object): Promis
       ...extraInfo,
     },
   }
+}
+
+/** Returns the browser id of the user */
+export async function getBrowserId() {
+  const fpPromise = await Fingerprint.load()
+  const result = await fpPromise.get()
+  return result.visitorId
 }

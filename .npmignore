@@ -1,7 +1,7 @@
 .vscode
 src
-.gitignore
 node_modules
+.gitignore
 .github
 .nvmrc
 biome.json
@@ -9,3 +9,6 @@ jest.config.mjs
 README.md
 tsconfig.json
 tsup.config.ts
+dist
+app.ts
+.opencode
